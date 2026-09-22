@@ -4,7 +4,7 @@ extends Node3D
 # Procedural stand-in scene used to lock the camera, lighting, terrain,
 # elevation, vegetation, props, water, and unit readability before production art.
 
-const TILE_SIZE := 4.0
+const TILE_SIZE := 3.6
 
 var materials: Dictionary = {}
 
@@ -73,10 +73,10 @@ func _build_environment() -> void:
 func _build_camera() -> void:
 	var camera := Camera3D.new()
 	camera.name = "StrategicCamera"
-	camera.position = Vector3(19, 22, 19)
+	camera.position = Vector3(20, 24, 20)
 	camera.look_at_from_position(camera.position, Vector3(0, 1.8, 0))
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-	camera.size = 24.0
+	camera.size = 25.0
 	camera.near = 0.1
 	camera.far = 120.0
 	camera.current = true
@@ -106,8 +106,8 @@ func _build_ground() -> void:
 	mesh_node(base, materials["ground"], Vector3(0, -0.35, 0))
 
 	# Modular hex plates are the visual language test; production tiles will replace these.
-	for x in range(-3, 4):
-		for z in range(-3, 4):
+	for x in range(-4, 5):
+		for z in range(-4, 5):
 			if x == -2 and z >= -1 and z <= 2:
 				continue
 			var tile := CylinderMesh.new()
