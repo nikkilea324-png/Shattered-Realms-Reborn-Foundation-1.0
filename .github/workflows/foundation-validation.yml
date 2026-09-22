@@ -1,0 +1,72 @@
+name: Shattered Realms Foundation Validation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: "4.7.2"
+  GODOT_RELEASE: "stable"
+
+jobs:
+  godot-foundation:
+    name: Godot Foundation Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Godot headless
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$HOME/godot"
+          curl -L --fail --retry 3 \
+            -o /tmp/godot.zip \
+            "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-${GODOT_RELEASE}/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux_headless.64.zip"
+
+          unzip -q /tmp/godot.zip -d "$HOME/godot"
+
+          GODOT_BIN="$HOME/godot/Godot_v${GODOT_VERSION}-${GODOT_RELEASE}_linux_headless.64"
+          test -x "$GODOT_BIN"
+
+          echo "GODOT_BIN=$GODOT_BIN" >> "$GITHUB_ENV"
+
+      - name: Verify Godot version
+        run: |
+          set -euo pipefail
+          "$GODOT_BIN" --version
+          "$GODOT_BIN" --version | grep -F "${GODOT_VERSION}"
+
+      - name: Validate project import and resources
+        run: |
+          set -euo pipefail
+          "$GODOT_BIN" --headless --path . --import --quit
+
+      - name: Validate project in editor mode
+        run: |
+          set -euo pipefail
+          "$GODOT_BIN" --headless --path . --editor --quit
+
+      - name: Confirm foundation files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f project.godot
+          test -f export_presets.cfg
+          test -f scenes/rendering_proof.tscn
+          test -f scripts/rendering_proof.gd
+          test -f docs/VISUAL_STANDARD.md
+          test -f docs/RENDERING_PROOF.md
+          test -f docs/ENGINE_VERSION.md
+          echo "Foundation file set is present."
